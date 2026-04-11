@@ -196,6 +196,7 @@ Voici la feuille de route du développement de Jarvis-BMO, depuis son prototype 
 
 ### 🟠 Phase 3 : Nouvelles Capacités (Sens & Contexte)
 - [ ] **L'Ajout de la Vue :** Intégration d'un système de vision par ordinateur en C++ (équivalent des bibliothèques Python d'analyse d'image) pour permettre à l'agent d'analyser son environnement visuel.
+- [ ] **Reconnaissance Faciale :** Mise en place d'un pipeline de reconnaissance faciale en allant chercher les informations open source.
 - [ ] **Mémoire Conversationnelle :** Création d'un historique de contexte persistant, permettant à l'agent de se souvenir du fil des discussions passées.
 
 ### 🔴 Phase 4 : Déploiement du Cerveau Double
