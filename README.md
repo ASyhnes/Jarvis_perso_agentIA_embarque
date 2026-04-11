@@ -200,4 +200,11 @@ Voici la feuille de route du développement de Jarvis-BMO, depuis son prototype 
 
 ### 🔴 Phase 4 : Déploiement du Cerveau Double
 - [ ] **Mode Veille (Sleep Mode) :** Implémentation d'une routine où l'agent stocke sa mémoire locale et l'envoie vers l'ordinateur plus performant. Le PC effectuera alors un tri et une synthèse de tout ce qui a été enregistré dans la journée.
-- [ ] **Mode Réflexion Critique :** Activation du systéme de prise de recule lorsque la discussion devient sérieuse>. détection de notion fondamentale sur la définition du "sérieux" d'une discussion.
+- [ ] **Mode Réflexion Critique :** Activation du système de prise de recul lorsque la discussion devient sérieuse>. détection de notion fondamentale sur la définition du "sérieux" d'une discussion.
+
+### 🟣 Phase 5 : Trading & Sécurité
+- [ ] Mettre en place open claw
+- [ ] Sécuriser en faisant ce qu'il faut
+- [ ] Prévoir l'installation du système de trading
+- [ ] Affichage d'un tableau de bord des différents outils/stratégies de trading
+- [ ] Préparer la possibilité de gérer mes stratégies en discutant avec Jarvis
