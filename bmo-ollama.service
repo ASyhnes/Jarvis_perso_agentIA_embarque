@@ -1,0 +1,24 @@
+[Unit]
+Description=Hailo-Ollama LLM Server for Jarvis-BMO
+Documentation=https://github.com/hailo-ai/hailo_model_zoo_genai
+After=network.target
+
+[Service]
+Type=simple
+User=syhnes
+Group=syhnes
+WorkingDirectory=/home/syhnes/be-more-agent
+Environment="OLLAMA_HOST=0.0.0.0:8000"
+Environment="OLLAMA_MODELS=/usr/share/ollama/.ollama/models"
+ExecStart=/home/syhnes/be-more-agent/start_hailo_ollama.sh
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+# Limites de ressources
+Nice=-10
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,26 @@
+[Unit]
+Description=Jarvis-BMO V2 Voice Assistant
+Documentation=https://github.com/ASyhnes/Jarvis_perso_agentIA_embarqu-
+After=network.target bmo-ollama.service
+Requires=bmo-ollama.service
+
+[Service]
+Type=simple
+User=syhnes
+Group=syhnes
+WorkingDirectory=/home/syhnes/be-more-agent
+Environment="DISPLAY=:0"
+Environment="WAYLAND_DISPLAY=wayland-1"
+Environment="XDG_RUNTIME_DIR=/run/user/1000"
+ExecStart=/home/syhnes/be-more-agent/start_jarvis.sh
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+# Limites de ressources
+Nice=-5
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

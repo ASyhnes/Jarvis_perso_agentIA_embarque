@@ -11,22 +11,12 @@ import sounddevice as sd
 from state import BotStates, StateManager
 from micro import get_micro_index, listen_continuously
 from speaker import get_speaker_index
-from piper import speak, cleanup_piper
+from piper import speak
 from brain import think, summarize_and_sleep
 from wakeword import wait_for_wakeword, check_sleep_command
 from visage import BotGUI
-import atexit
 
-# ============================================================================
-# ✅ OPTIMISATION 6: LOCKS POUR ÉVITER LES CONFLITS THREADING
-# ============================================================================
 idle_timer = None
-speak_lock = threading.Lock()  # Évite que 2 threads parlent en même temps
-llm_lock = threading.Lock()    # Évite que 2 threads appellent le LLM en même temps
-busy_lock = threading.Lock()   # Contrôle l'état occupé de l'agent
-
-# Nettoyage propre à la fermeture
-atexit.register(cleanup_piper)
 
 # Dossier contenant les phrases de patience pré-générées
 THINKING_SOUNDS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "thinking_sounds")
@@ -43,8 +33,7 @@ def get_alsa_output_device(sd_device_idx):
     return None
 
 def play_thinking_sound(device_idx=None):
-    """✅ OPTIMISATION 6: Joue un son de patience avec protection thread-safe
-    
+    """
     Joue aléatoirement un fichier WAV de patience via aplay (ALSA).
     Évite les conflits avec le stream microphone sounddevice.
     """
@@ -141,11 +130,9 @@ def start_agent_logic(state_manager):
         )
         patience_thread.start()
         
-        # 2. Réflexion du Cerveau ! (hailo-ollama LLM) — en parallèle du son
-        # ✅ OPTIMISATION 6: Protection avec lock pour éviter les appels concurrents
+        # 2. Réflexion du Cerveau ! (Ollama LLM) — en parallèle du son
         t_llm_start = time.time()
-        with llm_lock:
-            reply = think(transcription)
+        reply = think(transcription)
         t_llm_end = time.time()
         print(f"⏱️  [TEMPS] Cerveau sollicité en {t_llm_end - t_llm_start:.2f}s")
         
@@ -153,11 +140,9 @@ def start_agent_logic(state_manager):
         patience_thread.join()
         
         # 3. Synthèse vocale de la réponse (Piper)
-        # ✅ OPTIMISATION 6: Protection avec lock pour éviter les conflits audio
         if reply:
             t_tts_start = time.time()
-            with speak_lock:
-                speak(reply, device_idx=spk_idx, state_manager=state_manager)
+            speak(reply, device_idx=spk_idx, state_manager=state_manager)
             t_tts_end = time.time()
             print(f"⏱️  [TEMPS] Échange vocal terminé en {t_tts_end - t_tts_start:.2f}s")
             
@@ -222,6 +207,4 @@ if __name__ == "__main__":
         except KeyboardInterrupt:
             print("\nArrêt du programme principal.")
     except KeyboardInterrupt:
-        print("\n[INFO] ✅ Arrêt propre du programme...")
-        cleanup_piper()
-        print("[INFO] 👋 Jarvis-BMO arrêté")
+        print("\nArrêt du programme principal.")

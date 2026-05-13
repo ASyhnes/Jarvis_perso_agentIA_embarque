@@ -1,6 +1,5 @@
 from state import BotStates
 from piper import speak
-import sys
 
 def wait_for_wakeword(transcription, state_manager, spk_idx):
     """
@@ -30,8 +29,8 @@ def check_sleep_command(transcription, state_manager, spk_idx):
     text_lower = transcription.lower()
     
     # Mots clés de sommeil
-    if "dors" in text_lower or "sommeil" in text_lower or "merci" in text_lower:
-        print("[WAKEWORD] 😴 Commande de sommeil reçue.")
+    if "dors" in text_lower or "sommeil" in text_lower or "merci" in text_lower or "stop" in text_lower:
+        print("[WAKEWORD] � Commande de sommeil reçue.")
         if state_manager:
             pass
         speak("D'accord, je me mets en veille.", device_idx=spk_idx, state_manager=state_manager)
@@ -45,19 +44,6 @@ def check_sleep_command(transcription, state_manager, spk_idx):
         
         if state_manager:
             state_manager.set(BotStates.SLEEP)
-        return True
-    
-    # Commande d'arrêt complet de Jarvis
-    if "stop jarvis" in text_lower or "arrête jarvis" in text_lower or "éteins jarvis" in text_lower:
-        print("[WAKEWORD] 🛑 Commande d'arrêt complet reçue.")
-        speak("D'accord, je m'arrête. À bientôt !", device_idx=spk_idx, state_manager=state_manager)
-        import threading
-        import time
-        def shutdown_jarvis():
-            time.sleep(2)  # Laisser le temps de parler
-            print("[JARVIS] 👋 Arrêt complet du programme...")
-            sys.exit(0)
-        threading.Thread(target=shutdown_jarvis, daemon=False).start()
         return True
         
     return False
@@ -95,7 +81,7 @@ if __name__ == "__main__":
             check_sleep_command(transcription, state_mgr, spk_idx)
             
     print("\n[INFO TEST] Dites votre mot clé (ex: 'debout là dedans') pour réveiller l'agent.")
-    print("[INFO TEST] Dites ('dors', 'stop jarvis') pour le remettre en veille ou l'arrêter.")
+    print("[INFO TEST] Dites ('dors', 'stop') pour le remettre en veille.")
     
     # Lancement de l'écoute continue
     listen_continuously(

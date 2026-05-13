@@ -1,67 +1,112 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
-Génère les fichiers WAV des phrases de patience avec Piper.
-À lancer une seule fois : python generate_thinking_sounds.py
+Génère les sons de patience pour Jarvis
+Ces sons sont joués pendant que l'IA réfléchit
 """
 
-import subprocess
 import os
-import struct
+import subprocess
+import sys
 
+# Configuration
 PIPER_BINARY = os.path.expanduser("~/piper_bin/piper")
-VOICE_MODEL  = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                             "piper/fr_FR-upmc-medium.onnx")
-OUTPUT_DIR   = os.path.join(os.path.dirname(os.path.abspath(__file__)), "thinking_sounds")
+VOICE_MODEL = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "piper", "fr_FR-siwis-low.onnx")
+OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "thinking_sounds")
 
+# Phrases de patience variées
 PHRASES = [
-    "oui?",
-    "ok",
-    "deux minutes, je réfléchis",
-    "hum... vaste question"
+    "Hmm, laisse moi réfléchir",
+    "Un instant",
+    "Je cherche",
+    "Voyons voir",
+    "Hmm",
+    "Réflexion en cours",
+    "J'y réfléchis",
+    "Un moment",
 ]
 
-def raw_to_wav(raw_bytes: bytes, sample_rate: int = 22050, channels: int = 1, bits: int = 16) -> bytes:
-    """Encapsule des bytes PCM bruts dans un en-tête WAV standard."""
-    data_size = len(raw_bytes)
-    header = struct.pack(
-        '<4sI4s4sIHHIIHH4sI',
-        b'RIFF', 36 + data_size, b'WAVE',
-        b'fmt ', 16, 1, channels,
-        sample_rate, sample_rate * channels * bits // 8,
-        channels * bits // 8, bits,
-        b'data', data_size
-    )
-    return header + raw_bytes
+def check_piper():
+    """Vérifie que Piper est installé"""
+    if not os.path.exists(PIPER_BINARY):
+        print(f"❌ Erreur: Piper non trouvé à {PIPER_BINARY}")
+        print("💡 Installez Piper ou ajustez PIPER_BINARY dans ce script")
+        return False
+    
+    if not os.path.exists(VOICE_MODEL):
+        print(f"❌ Erreur: Modèle vocal non trouvé à {VOICE_MODEL}")
+        print("💡 Vérifiez que le modèle Piper est bien installé")
+        return False
+    
+    return True
 
+def generate_sounds():
+    """Génère les fichiers audio"""
+    # Créer le dossier si nécessaire
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    
+    print("🔊 Génération des sons de patience...")
+    print(f"📁 Dossier: {OUTPUT_DIR}")
+    print(f"🎤 Modèle: {VOICE_MODEL}")
+    print("")
+    
+    success_count = 0
+    
+    for i, phrase in enumerate(PHRASES, 1):
+        output_file = os.path.join(OUTPUT_DIR, f"thinking_{i}.wav")
+        
+        print(f"[{i}/{len(PHRASES)}] Génération: '{phrase}'... ", end="", flush=True)
+        
+        try:
+            # Générer avec Piper
+            result = subprocess.run(
+                [PIPER_BINARY, "--model", VOICE_MODEL, "--output_file", output_file],
+                input=phrase.encode('utf-8'),
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.PIPE,
+                timeout=10
+            )
+            
+            if result.returncode == 0 and os.path.exists(output_file):
+                print("✅")
+                success_count += 1
+            else:
+                print("❌")
+                print(f"   Erreur: {result.stderr.decode('utf-8')}")
+        
+        except subprocess.TimeoutExpired:
+            print("❌ (timeout)")
+        except Exception as e:
+            print(f"❌ ({e})")
+    
+    print("")
+    print("="*60)
+    print(f"✅ {success_count}/{len(PHRASES)} sons générés avec succès")
+    print("="*60)
+    
+    if success_count > 0:
+        print("\n💡 Ces sons seront joués aléatoirement pendant que Jarvis réfléchit !")
+        print(f"📂 Fichiers dans: {OUTPUT_DIR}")
+    
+    return success_count > 0
 
 def main():
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
-
-    if not os.path.exists(PIPER_BINARY):
-        print(f"[ERREUR] Piper introuvable : {PIPER_BINARY}")
-        return
-    if not os.path.exists(VOICE_MODEL):
-        print(f"[ERREUR] Modèle voix introuvable : {VOICE_MODEL}")
-        return
-
-    print(f"Génération de {len(PHRASES)} fichiers dans '{OUTPUT_DIR}' ...\n")
-
-    for i, phrase in enumerate(PHRASES):
-        filename = os.path.join(OUTPUT_DIR, f"thinking_{i:02d}.wav")
-        print(f"  [{i+1:02d}] {phrase}")
-
-        proc = subprocess.Popen(
-            [PIPER_BINARY, "--model", VOICE_MODEL, "--output-raw"],
-            stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL
-        )
-        raw_audio, _ = proc.communicate(input=phrase.encode("utf-8"))
-        wav_bytes = raw_to_wav(raw_audio)
-
-        with open(filename, "wb") as f:
-            f.write(wav_bytes)
-        print(f"       → {filename} ({len(wav_bytes)} bytes)")
-
-    print(f"\n✅ Terminé ! {len(PHRASES)} fichiers générés.")
-
+    print("\n" + "🎵 " * 30)
+    print("   GÉNÉRATION DES SONS DE PATIENCE")
+    print("🎵 " * 30)
+    print("")
+    
+    # Vérifications
+    if not check_piper():
+        return 1
+    
+    # Génération
+    if generate_sounds():
+        print("\n✅ Terminé ! Relancez Jarvis pour entendre les sons.")
+        return 0
+    else:
+        print("\n❌ Échec de la génération des sons")
+        return 1
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
